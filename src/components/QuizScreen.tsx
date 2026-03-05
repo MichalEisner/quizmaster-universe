@@ -36,9 +36,8 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
         setSelected(null);
         setShowResult(false);
       } else {
-        onFinish(score + (selected === question.correctIndex ? 0 : 0), questions.length);
-        // score already updated above
-        onFinish(score, questions.length);
+        const finalScore = score + (selected === question.correctIndex ? 1 : 0);
+        onFinish(finalScore, questions.length);
       }
     }, 1500);
     return () => clearTimeout(timer);

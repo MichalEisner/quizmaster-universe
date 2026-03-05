@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import CategorySelect from '@/components/CategorySelect';
 import QuizScreen from '@/components/QuizScreen';
 import ResultScreen from '@/components/ResultScreen';
