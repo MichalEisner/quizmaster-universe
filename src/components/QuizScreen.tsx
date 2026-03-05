@@ -28,6 +28,8 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
     }
   };
 
+  const isCorrect = selected === question.correctIndex;
+
   useEffect(() => {
     if (!showResult) return;
     const timer = setTimeout(() => {
@@ -36,7 +38,7 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
         setSelected(null);
         setShowResult(false);
       } else {
-        const finalScore = score + (selected === question.correctIndex ? 1 : 0);
+        const finalScore = score + (isCorrect ? 1 : 0);
         onFinish(finalScore, questions.length);
       }
     }, 1500);
