@@ -44,13 +44,19 @@ const Index = () => {
     setScreen('results');
   };
 
-  const restart = () => {
-    if (category) startQuiz(category);
+  const restart = async () => {
+    if (category) await startQuiz(category);
   };
 
   return (
     <>
       {screen === 'categories' && <CategorySelect onSelect={startQuiz} />}
+      {screen === 'loading' && (
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+          <p className="text-muted-foreground text-lg">AI generuje otázky...</p>
+        </div>
+      )}
       {screen === 'quiz' && category && (
         <QuizScreen
           questions={questions}
