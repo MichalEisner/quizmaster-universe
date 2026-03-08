@@ -7,9 +7,10 @@ interface ResultScreenProps {
   categoryIcon: string;
   onRestart: () => void;
   onHome: () => void;
+  onReview?: () => void;
 }
 
-const ResultScreen = ({ score, total, categoryName, categoryIcon, onRestart, onHome }: ResultScreenProps) => {
+const ResultScreen = ({ score, total, categoryName, categoryIcon, onRestart, onHome, onReview }: ResultScreenProps) => {
   const percentage = Math.round((score / total) * 100);
   
   const getMessage = () => {
@@ -63,7 +64,7 @@ const ResultScreen = ({ score, total, categoryName, categoryIcon, onRestart, onH
           {score} z {total} správně
         </p>
 
-        <div className="flex gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -72,6 +73,16 @@ const ResultScreen = ({ score, total, categoryName, categoryIcon, onRestart, onH
           >
             Hrát znovu
           </motion.button>
+          {onReview && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onReview}
+              className="px-6 py-3 bg-muted text-foreground rounded-lg font-semibold"
+            >
+              📋 Zobrazit odpovědi
+            </motion.button>
+          )}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
