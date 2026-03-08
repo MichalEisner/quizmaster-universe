@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const prevSessionRef = useRef<Session | null>(null);
+  const locationRef = useRef(location.pathname);
 
   const fetchUsername = async (userId: string) => {
     const { data } = await supabase
