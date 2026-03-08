@@ -35,13 +35,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const wasLoggedOut = !prevSessionRef.current;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         setTimeout(() => fetchUsername(session.user.id), 0);
+        if (wasLoggedOut && (location.pathname === '/auth' || location.pathname === '/~oauth')) {
+          navigate('/');
+        }
       } else {
         setUsername('');
       }
+      prevSessionRef.current = session;
       setLoading(false);
     });
 
