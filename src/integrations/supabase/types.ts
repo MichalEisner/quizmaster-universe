@@ -85,6 +85,7 @@ export type Database = {
           username: string
         }[]
       }
+      is_username_taken: { Args: { _username: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

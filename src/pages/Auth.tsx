@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,12 +27,20 @@ const Auth = () => {
         navigate('/');
       }
     } else {
-      if (!username.trim()) {
+      const trimmedUsername = username.trim();
+      if (!trimmedUsername) {
         toast.error('Zadej přezdívku');
         setSubmitting(false);
         return;
       }
-      const { error } = await signUp(email, password, username.trim());
+      // Check if username is taken
+      const { data: taken } = await supabase.rpc('is_username_taken', { _username: trimmedUsername });
+      if (taken) {
+        toast.error('Tato přezdívka je již zabraná');
+        setSubmitting(false);
+        return;
+      }
+      const { error } = await signUp(email, password, trimmedUsername);
       if (error) {
         toast.error(error.message);
       } else {
