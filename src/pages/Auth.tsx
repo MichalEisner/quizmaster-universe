@@ -34,12 +34,8 @@ const Auth = () => {
         return;
       }
       // Check if username is taken
-      const { data: existing } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', trimmedUsername)
-        .maybeSingle();
-      if (existing) {
+      const { data: taken } = await supabase.rpc('is_username_taken', { _username: trimmedUsername });
+      if (taken) {
         toast.error('Tato přezdívka je již zabraná');
         setSubmitting(false);
         return;
