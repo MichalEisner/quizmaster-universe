@@ -31,12 +31,24 @@ const Auth = () => {
         navigate('/');
       }
     } else {
-      if (!username.trim()) {
+      const trimmedUsername = username.trim();
+      if (!trimmedUsername) {
         toast.error('Zadej přezdívku');
         setSubmitting(false);
         return;
       }
-      const { error } = await signUp(email, password, username.trim());
+      // Check if username is taken
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', trimmedUsername)
+        .maybeSingle();
+      if (existing) {
+        toast.error('Tato přezdívka je již zabraná');
+        setSubmitting(false);
+        return;
+      }
+      const { error } = await signUp(email, password, trimmedUsername);
       if (error) {
         toast.error(error.message);
       } else {
