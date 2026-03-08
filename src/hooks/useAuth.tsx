@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -19,6 +20,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const prevSessionRef = useRef<Session | null>(null);
 
   const fetchUsername = async (userId: string) => {
     const { data } = await supabase
@@ -31,13 +35,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const wasLoggedOut = !prevSessionRef.current;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         setTimeout(() => fetchUsername(session.user.id), 0);
+        if (wasLoggedOut && (location.pathname === '/auth' || location.pathname === '/~oauth')) {
+          navigate('/');
+        }
       } else {
         setUsername('');
       }
+      prevSessionRef.current = session;
       setLoading(false);
     });
 
