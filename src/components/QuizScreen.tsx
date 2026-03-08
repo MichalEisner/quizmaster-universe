@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Question } from '@/data/questions';
+import { QuizAnswer } from '@/lib/quizHistory';
 
 interface QuizScreenProps {
   questions: Question[];
   categoryName: string;
   categoryIcon: string;
-  onFinish: (score: number, total: number) => void;
+  onFinish: (score: number, total: number, answers: QuizAnswer[]) => void;
   onBack: () => void;
 }
 
@@ -15,6 +16,7 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [answers, setAnswers] = useState<QuizAnswer[]>([]);
 
   const question = questions[current];
   const progress = ((current + 1) / questions.length) * 100;
@@ -23,9 +25,14 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
     if (selected !== null) return;
     setSelected(index);
     setShowResult(true);
-    if (index === question.correctIndex) {
-      setScore(s => s + 1);
-    }
+    const correct = index === question.correctIndex;
+    if (correct) setScore(s => s + 1);
+    setAnswers(prev => [...prev, {
+      question: question.question,
+      options: question.options,
+      correctIndex: question.correctIndex,
+      selectedIndex: index,
+    }]);
   };
 
   const isCorrect = selected === question.correctIndex;
@@ -39,7 +46,7 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
         setShowResult(false);
       } else {
         const finalScore = score + (isCorrect ? 1 : 0);
-        onFinish(finalScore, questions.length);
+        onFinish(finalScore, questions.length, answers);
       }
     }, 1500);
     return () => clearTimeout(timer);
@@ -62,12 +69,8 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-2xl">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <button
-            onClick={onBack}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <button onClick={onBack} className="text-muted-foreground hover:text-foreground transition-colors">
             ← Zpět
           </button>
           <div className="flex items-center gap-2">
@@ -79,7 +82,6 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
           </span>
         </div>
 
-        {/* Progress bar */}
         <div className="w-full h-2 bg-muted rounded-full mb-8 overflow-hidden">
           <motion.div
             className="h-full bg-gradient-to-r from-primary to-secondary rounded-full"
@@ -89,7 +91,6 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
           />
         </div>
 
-        {/* Question */}
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
@@ -99,7 +100,6 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
             transition={{ duration: 0.3 }}
           >
             <h2 className="text-2xl font-bold text-foreground mb-8">{question.question}</h2>
-
             <div className="space-y-3">
               {question.options.map((option, i) => (
                 <motion.button
@@ -118,7 +118,6 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
           </motion.div>
         </AnimatePresence>
 
-        {/* Score */}
         <div className="mt-8 text-center">
           <span className="text-muted-foreground text-sm">Skóre: </span>
           <span className="font-bold text-primary font-mono">{score}</span>
