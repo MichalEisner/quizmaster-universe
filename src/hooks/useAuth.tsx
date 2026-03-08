@@ -39,25 +39,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [location.pathname]);
 
   useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       const wasLoggedOut = !prevSessionRef.current;
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        setTimeout(() => fetchUsername(session.user.id), 0);
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+      if (newSession?.user) {
+        setTimeout(() => fetchUsername(newSession.user.id), 0);
         if (wasLoggedOut && (locationRef.current === '/auth' || locationRef.current === '/~oauth')) {
           navigate('/');
         }
       } else {
         setUsername('');
       }
-      prevSessionRef.current = session;
+      prevSessionRef.current = newSession;
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) fetchUsername(session.user.id);
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setUser(s?.user ?? null);
+      if (s?.user) fetchUsername(s.user.id);
       setLoading(false);
     });
 
