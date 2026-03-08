@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { categories } from '@/data/questions';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +14,7 @@ interface LeaderboardEntry {
   username: string;
   total_score: number;
   quiz_count: number;
+  avatar_url: string | null;
 }
 
 const tabs = [
@@ -100,6 +102,12 @@ const LeaderboardScreen = ({ onBack }: LeaderboardScreenProps) => {
                   }`}
                 >
                   <span className="text-2xl w-10 text-center font-bold">{getMedal(i)}</span>
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarImage src={entry.avatar_url || undefined} alt={entry.username || 'Anonym'} />
+                    <AvatarFallback className="bg-muted text-muted-foreground font-bold">
+                      {(entry.username || 'A').charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className={`font-bold truncate ${isMe ? 'text-primary' : 'text-card-foreground'}`}>
                       {entry.username || 'Anonym'}
