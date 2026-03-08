@@ -1,80 +1,99 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Lock } from 'lucide-react';
+import { ArrowLeft, User, Lock, Camera } from 'lucide-react';
 
 const Profile = () => {
-  const { user, username } = useAuth();
+  const { user, username, avatarUrl, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   const [newUsername, setNewUsername] = useState(username);
   const [savingUsername, setSavingUsername] = useState(false);
-
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!user) {
     navigate('/auth');
     return null;
   }
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Nahraj prosím obrázek');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Obrázek může mít maximálně 2 MB');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    const ext = file.name.split('.').pop();
+    const path = `${user.id}/avatar.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error('Nepodařilo se nahrát obrázek');
+      setUploadingAvatar(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+    const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl })
+      .eq('id', user.id);
+
+    setUploadingAvatar(false);
+
+    if (updateError) {
+      toast.error('Nepodařilo se uložit avatar');
+    } else {
+      toast.success('Profilový obrázek změněn');
+      await refreshProfile();
+    }
+  };
+
   const handleUsernameChange = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newUsername.trim();
-    if (!trimmed) {
-      toast.error('Přezdívka nemůže být prázdná');
-      return;
-    }
-    if (trimmed.length > 30) {
-      toast.error('Přezdívka může mít maximálně 30 znaků');
-      return;
-    }
-    if (trimmed === username) {
-      toast.info('Přezdívka je stejná');
-      return;
-    }
+    if (!trimmed) { toast.error('Přezdívka nemůže být prázdná'); return; }
+    if (trimmed.length > 30) { toast.error('Přezdívka může mít maximálně 30 znaků'); return; }
+    if (trimmed === username) { toast.info('Přezdívka je stejná'); return; }
 
     setSavingUsername(true);
     const { data: taken } = await supabase.rpc('is_username_taken', { _username: trimmed });
-    if (taken) {
-      toast.error('Tato přezdívka je již zabraná');
-      setSavingUsername(false);
-      return;
-    }
+    if (taken) { toast.error('Tato přezdívka je již zabraná'); setSavingUsername(false); return; }
 
-    const { error } = await supabase
-      .from('profiles')
-      .update({ username: trimmed })
-      .eq('id', user.id);
+    const { error } = await supabase.from('profiles').update({ username: trimmed }).eq('id', user.id);
     setSavingUsername(false);
 
     if (error) {
-      if (error.code === '23505') {
-        toast.error('Tato přezdívka je již zabraná');
-      } else {
-        toast.error('Nepodařilo se změnit přezdívku');
-      }
+      toast.error(error.code === '23505' ? 'Tato přezdívka je již zabraná' : 'Nepodařilo se změnit přezdívku');
     } else {
       toast.success('Přezdívka změněna');
-      window.location.reload();
+      await refreshProfile();
     }
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword.length < 6) {
-      toast.error('Heslo musí mít alespoň 6 znaků');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast.error('Hesla se neshodují');
-      return;
-    }
+    if (newPassword.length < 6) { toast.error('Heslo musí mít alespoň 6 znaků'); return; }
+    if (newPassword !== confirmPassword) { toast.error('Hesla se neshodují'); return; }
 
     setSavingPassword(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -84,7 +103,6 @@ const Profile = () => {
       toast.error(error.message);
     } else {
       toast.success('Heslo bylo změněno');
-      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     }
@@ -107,8 +125,31 @@ const Profile = () => {
           <h1 className="text-2xl font-bold text-foreground">Nastavení profilu</h1>
         </div>
 
-        <div className="text-sm text-muted-foreground">
-          Email: <span className="text-foreground">{user.email}</span>
+        {/* Avatar */}
+        <div className="bg-card border border-border rounded-xl p-6 flex flex-col items-center gap-4">
+          <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className="h-24 w-24 rounded-full object-cover border-2 border-border" />
+            ) : (
+              <div className="h-24 w-24 rounded-full bg-primary/20 flex items-center justify-center text-3xl font-bold text-primary border-2 border-border">
+                {(username || user.email || '?')[0].toUpperCase()}
+              </div>
+            )}
+            <div className="absolute inset-0 rounded-full bg-background/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera className="h-6 w-6 text-foreground" />
+            </div>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarUpload}
+          />
+          <p className="text-sm text-muted-foreground">
+            {uploadingAvatar ? 'Nahrávám...' : 'Klikni pro změnu obrázku'}
+          </p>
+          <p className="text-xs text-muted-foreground">Email: {user.email}</p>
         </div>
 
         {/* Username change */}

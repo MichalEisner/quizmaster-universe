@@ -1,9 +1,9 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, LogOut, User, Settings } from 'lucide-react';
+import { LogIn, LogOut, Settings } from 'lucide-react';
 
 const UserMenu = () => {
-  const { user, username, signOut } = useAuth();
+  const { user, username, avatarUrl, signOut } = useAuth();
   const navigate = useNavigate();
 
   if (!user) {
@@ -21,7 +21,13 @@ const UserMenu = () => {
   return (
     <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
       <div className="flex items-center gap-2 px-3 py-2 bg-card border border-border rounded-lg text-sm">
-        <User className="h-4 w-4 text-primary" />
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="Avatar" className="h-6 w-6 rounded-full object-cover" />
+        ) : (
+          <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+            {(username || user.email || '?')[0].toUpperCase()}
+          </div>
+        )}
         <span className="text-foreground font-medium">{username || user.email}</span>
       </div>
       <button
