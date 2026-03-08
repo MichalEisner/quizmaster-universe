@@ -32,7 +32,10 @@ Každá otázka musí mít přesně 4 možnosti odpovědi, z nichž právě jedn
 Otázky by měly být středně obtížné - ne příliš lehké, ale ani příliš těžké.
 Snaž se, aby otázky byly co nejvíce různorodé a pokrývaly různá podtémata.`;
 
+    const seed = Math.random().toString(36).substring(2, 10);
     const userPrompt = `Vygeneruj přesně ${count} kvízových otázek na téma: ${topic}.
+
+Seed pro unikátnost: ${seed}. Generuj pokaždé ZCELA JINÉ otázky než předtím. Buď kreativní a pokrývej různé aspekty tématu.
 
 Odpověz POUZE validním JSON polem v tomto formátu (žádný jiný text):
 [
