@@ -88,7 +88,7 @@ const Index = () => {
   return (
     <>
       {screen === 'categories' && (
-        <CategorySelect onSelect={selectCategory} onHistory={() => setScreen('history')} />
+        <CategorySelect onSelect={selectCategory} onHistory={() => setScreen('history')} onLeaderboard={() => setScreen('leaderboard')} />
       )}
       {screen === 'difficulty' && category && (
         <DifficultySelect
