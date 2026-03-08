@@ -7,10 +7,12 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   username: string;
+  avatarUrl: string;
   loading: boolean;
   signUp: (email: string, password: string, username: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,19 +21,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const prevSessionRef = useRef<Session | null>(null);
   const locationRef = useRef(location.pathname);
 
-  const fetchUsername = async (userId: string) => {
+  const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('username')
+      .select('username, avatar_url')
       .eq('id', userId)
       .single();
     if (data?.username) setUsername(data.username);
+    if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+  };
+
+  const refreshProfile = async () => {
+    if (user) await fetchProfile(user.id);
   };
 
   useEffect(() => {
@@ -44,12 +52,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
       if (newSession?.user) {
-        setTimeout(() => fetchUsername(newSession.user.id), 0);
+        setTimeout(() => fetchProfile(newSession.user.id), 0);
         if (wasLoggedOut && (locationRef.current === '/auth' || locationRef.current === '/~oauth')) {
           navigate('/');
         }
       } else {
         setUsername('');
+        setAvatarUrl('');
       }
       prevSessionRef.current = newSession;
       setLoading(false);
@@ -58,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) fetchUsername(s.user.id);
+      if (s?.user) fetchProfile(s.user.id);
       setLoading(false);
     });
 
@@ -87,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, username, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, user, username, avatarUrl, loading, signUp, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
