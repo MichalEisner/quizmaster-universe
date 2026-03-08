@@ -1,26 +1,33 @@
 import { useState } from 'react';
 import CategorySelect from '@/components/CategorySelect';
+import DifficultySelect, { Difficulty } from '@/components/DifficultySelect';
 import QuizScreen from '@/components/QuizScreen';
 import ResultScreen from '@/components/ResultScreen';
 import { CategoryInfo, generateQuiz, Question } from '@/data/questions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-type Screen = 'categories' | 'quiz' | 'results' | 'loading';
+type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading';
 
 const Index = () => {
   const [screen, setScreen] = useState<Screen>('categories');
   const [category, setCategory] = useState<CategoryInfo | null>(null);
+  const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [result, setResult] = useState({ score: 0, total: 0 });
 
-  const startQuiz = async (cat: CategoryInfo) => {
+  const selectCategory = (cat: CategoryInfo) => {
     setCategory(cat);
+    setScreen('difficulty');
+  };
+
+  const startQuiz = async (diff: Difficulty) => {
+    setDifficulty(diff);
     setScreen('loading');
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-questions', {
-        body: { category: cat.id, count: 10 },
+        body: { category: category!.id, count: 10, difficulty: diff },
       });
 
       if (error) throw error;
@@ -34,7 +41,7 @@ const Index = () => {
     } catch (e) {
       console.error('AI generation failed, using fallback:', e);
       toast.error('AI generování selhalo, používám záložní otázky');
-      setQuestions(generateQuiz(cat.id, 10));
+      setQuestions(generateQuiz(category!.id, 10));
       setScreen('quiz');
     }
   };
@@ -45,12 +52,19 @@ const Index = () => {
   };
 
   const restart = async () => {
-    if (category) await startQuiz(category);
+    if (category) await startQuiz(difficulty);
   };
 
   return (
     <>
-      {screen === 'categories' && <CategorySelect onSelect={startQuiz} />}
+      {screen === 'categories' && <CategorySelect onSelect={selectCategory} />}
+      {screen === 'difficulty' && category && (
+        <DifficultySelect
+          category={category}
+          onSelect={startQuiz}
+          onBack={() => setScreen('categories')}
+        />
+      )}
       {screen === 'loading' && (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
