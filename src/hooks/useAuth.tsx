@@ -20,6 +20,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const prevSessionRef = useRef<Session | null>(null);
 
   const fetchUsername = async (userId: string) => {
     const { data } = await supabase
