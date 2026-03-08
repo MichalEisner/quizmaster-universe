@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
