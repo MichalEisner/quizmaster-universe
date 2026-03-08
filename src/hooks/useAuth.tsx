@@ -28,13 +28,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const prevSessionRef = useRef<Session | null>(null);
   const locationRef = useRef(location.pathname);
 
-  const fetchUsername = async (userId: string) => {
+  const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('username')
+      .select('username, avatar_url')
       .eq('id', userId)
       .single();
     if (data?.username) setUsername(data.username);
+    if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+  };
+
+  const refreshProfile = async () => {
+    if (user) await fetchProfile(user.id);
   };
 
   useEffect(() => {
