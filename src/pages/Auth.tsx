@@ -7,12 +7,32 @@ import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgot, setIsForgot] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      toast.error('Zadej email');
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setSubmitting(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Odkaz pro obnovení hesla byl odeslán na tvůj email');
+      setIsForgot(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
