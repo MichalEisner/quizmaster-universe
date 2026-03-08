@@ -166,57 +166,6 @@ const Auth = () => {
       </motion.div>
     </div>
   );
-
-  if (isForgot) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-sm"
-        >
-          <h1 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            QuizMaster
-          </h1>
-          <p className="text-muted-foreground text-center mb-8">
-            Zadej svůj email pro obnovení hesla
-          </p>
-          <form onSubmit={handleForgotPassword} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-foreground block mb-1.5">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground focus:border-primary focus:outline-none transition-colors"
-                placeholder="tvuj@email.cz"
-                required
-              />
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={submitting}
-              className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold disabled:opacity-50"
-            >
-              {submitting ? '...' : 'Odeslat odkaz'}
-            </motion.button>
-          </form>
-          <div className="text-center mt-6">
-            <button
-              onClick={() => setIsForgot(false)}
-              className="text-sm text-primary hover:underline font-medium"
-            >
-              ← Zpět na přihlášení
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  return (
 };
 
 export default Auth;
