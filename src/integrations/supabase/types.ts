@@ -82,6 +82,7 @@ export type Database = {
       get_leaderboard: {
         Args: { filter_category_id?: string }
         Returns: {
+          avatar_url: string
           quiz_count: number
           total_score: number
           user_id: string
