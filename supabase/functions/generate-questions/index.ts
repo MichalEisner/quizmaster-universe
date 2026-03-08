@@ -27,15 +27,29 @@ serve(async (req) => {
     const topic = categoryPrompts[category];
     if (!topic) throw new Error(`Unknown category: ${category}`);
 
-    const systemPrompt = `Jsi tvůrce kvízových otázek v češtině. Generuj unikátní, zajímavé a různorodé otázky.
+    const subtopics: Record<string, string[]> = {
+      law: ["pracovní právo a zákoník práce", "rodinné právo a dědictví", "obchodní právo a korporace", "správní právo a úřady", "trestní právo procesní", "mezinárodní humanitární právo", "právo duševního vlastnictví", "ústavní právo a dělba moci", "evropské právo a instituce EU", "historie práva a právní filosofie"],
+      it: ["algoritmy a datové struktury", "webové technologie a frameworky", "databáze a SQL", "umělá inteligence a strojové učení", "mobilní vývoj", "cloudové služby", "kryptografie a šifrování", "historie počítačů", "linuxové systémy", "síťové protokoly a architektura"],
+      games: ["retro hry a konzole 80. a 90. let", "indie hry a jejich tvůrci", "esport a kompetitivní scéna", "herní enginy a technologie", "RPG a příběhové hry", "FPS a akční hry", "strategické a simulační hry", "Nintendo a jeho historie", "PlayStation a Xbox exkluzivity", "mobilní a VR hry"],
+      movies: ["české filmy a nová vlna", "animované filmy a studia", "sci-fi a fantasy filmy", "filmová hudba a soundtracky", "oscarové filmy a ceremonie", "režiséři 21. století", "kultovní seriály", "dokumentární filmy", "akční a thriller filmy", "komedie a romantické filmy"],
+      books: ["česká literatura 20. století", "fantasy a sci-fi literatura", "klasická ruská literatura", "americká literatura", "dětská literatura a pohádky", "básníci a poezie", "detektivní a kriminální romány", "nobelova cena za literaturu", "antická literatura", "současná světová próza"],
+    };
+
+    const catSubtopics = subtopics[category] || [];
+    // Pick 3 random subtopics to focus on
+    const shuffled = catSubtopics.sort(() => Math.random() - 0.5);
+    const focus = shuffled.slice(0, 3).join(", ");
+
+    const systemPrompt = `Jsi kreativní tvůrce kvízových otázek v češtině. NIKDY neopakuj stejné otázky.
 Každá otázka musí mít přesně 4 možnosti odpovědi, z nichž právě jedna je správná.
-Otázky by měly být středně obtížné - ne příliš lehké, ale ani příliš těžké.
-Snaž se, aby otázky byly co nejvíce různorodé a pokrývaly různá podtémata.`;
+Otázky by měly být středně obtížné, zajímavé a překvapivé.`;
 
     const seed = Math.random().toString(36).substring(2, 10);
-    const userPrompt = `Vygeneruj přesně ${count} kvízových otázek na téma: ${topic}.
+    const timestamp = Date.now();
+    const userPrompt = `Vygeneruj přesně ${count} UNIKÁTNÍCH kvízových otázek na téma: ${topic}.
 
-Seed pro unikátnost: ${seed}. Generuj pokaždé ZCELA JINÉ otázky než předtím. Buď kreativní a pokrývej různé aspekty tématu.
+POVINNĚ se zaměř především na tato podtémata: ${focus}.
+Identifikátor generování: ${seed}-${timestamp}. Buď maximálně kreativní a vyhni se očividným/banálním otázkám.
 
 Odpověz POUZE validním JSON polem v tomto formátu (žádný jiný text):
 [
@@ -56,6 +70,7 @@ correctIndex je index (0-3) správné odpovědi v poli options.`;
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
+        temperature: 1.2,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
