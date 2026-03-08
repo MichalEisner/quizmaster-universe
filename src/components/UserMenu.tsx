@@ -1,20 +1,33 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, LogOut, Settings } from 'lucide-react';
+import { LogIn, LogOut, Settings, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 const UserMenu = () => {
   const { user, username, avatarUrl, signOut } = useAuth();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   if (!user) {
     return (
-      <button
-        onClick={() => navigate('/auth')}
-        className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm text-foreground hover:border-primary transition-colors"
-      >
-        <LogIn className="h-4 w-4" />
-        Přihlásit se
-      </button>
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-1 px-3 py-2 bg-card border border-border rounded-lg text-sm text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+          title="Přepnout režim"
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
+        <button
+          onClick={() => navigate('/auth')}
+          className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm text-foreground hover:border-primary transition-colors"
+        >
+          <LogIn className="h-4 w-4" />
+          Přihlásit se
+        </button>
+      </div>
     );
   }
 
@@ -30,6 +43,13 @@ const UserMenu = () => {
         )}
         <span className="text-foreground font-medium">{username || user.email}</span>
       </div>
+      <button
+        onClick={toggleTheme}
+        className="flex items-center gap-1 px-3 py-2 bg-card border border-border rounded-lg text-sm text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+        title="Přepnout režim"
+      >
+        {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </button>
       <button
         onClick={() => navigate('/profile')}
         className="flex items-center gap-1 px-3 py-2 bg-card border border-border rounded-lg text-sm text-muted-foreground hover:text-primary hover:border-primary transition-colors"
