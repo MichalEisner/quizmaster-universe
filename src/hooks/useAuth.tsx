@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
       if (newSession?.user) {
-        setTimeout(() => fetchUsername(newSession.user.id), 0);
+        setTimeout(() => fetchProfile(newSession.user.id), 0);
         if (wasLoggedOut && (locationRef.current === '/auth' || locationRef.current === '/~oauth')) {
           navigate('/');
         }
