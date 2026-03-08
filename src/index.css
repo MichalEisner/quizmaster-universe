@@ -6,6 +6,47 @@
 
 @layer base {
   :root {
+    --background: 40 30% 96%;
+    --foreground: 230 25% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 230 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 25% 12%;
+
+    --primary: 160 80% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 270 50% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 230 15% 90%;
+    --muted-foreground: 230 10% 40%;
+
+    --accent: 45 95% 50%;
+    --accent-foreground: 230 25% 7%;
+
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 230 15% 85%;
+    --input: 230 15% 85%;
+    --ring: 160 80% 40%;
+
+    --radius: 0.75rem;
+
+    --category-law: 210 80% 55%;
+    --category-it: 160 80% 50%;
+    --category-games: 270 60% 58%;
+    --category-movies: 0 75% 55%;
+    --category-books: 45 95% 60%;
+
+    --glow-primary: 0 0 20px hsl(160 80% 40% / 0.2);
+    --glow-secondary: 0 0 20px hsl(270 50% 55% / 0.2);
+  }
+
+  .dark {
     --background: 230 25% 7%;
     --foreground: 220 20% 92%;
 
@@ -33,8 +74,6 @@
     --border: 230 15% 20%;
     --input: 230 15% 20%;
     --ring: 160 80% 50%;
-
-    --radius: 0.75rem;
 
     --category-law: 210 80% 55%;
     --category-it: 160 80% 50%;
