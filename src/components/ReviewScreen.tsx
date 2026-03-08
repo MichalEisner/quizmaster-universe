@@ -1,5 +1,8 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Lightbulb, Loader2 } from 'lucide-react';
 import { QuizHistoryEntry } from '@/lib/quizHistory';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReviewScreenProps {
   entry: QuizHistoryEntry;
@@ -9,6 +12,55 @@ interface ReviewScreenProps {
 const ReviewScreen = ({ entry, onBack }: ReviewScreenProps) => {
   const mistakes = entry.answers.filter(a => a.selectedIndex !== a.correctIndex);
   const correct = entry.answers.filter(a => a.selectedIndex === a.correctIndex);
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+
+  const fetchExplanation = async (key: string, question: string, options: string[], correctIndex: number) => {
+    if (explanations[key]) {
+      // Toggle off
+      setExplanations(prev => { const n = { ...prev }; delete n[key]; return n; });
+      return;
+    }
+    setLoading(prev => ({ ...prev, [key]: true }));
+    try {
+      const { data, error } = await supabase.functions.invoke('explain-answer', {
+        body: { question, options, correctIndex },
+      });
+      if (error) throw error;
+      setExplanations(prev => ({ ...prev, [key]: data.explanation }));
+    } catch {
+      setExplanations(prev => ({ ...prev, [key]: 'Nepodařilo se načíst vysvětlení.' }));
+    } finally {
+      setLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
+  const ExplainButton = ({ qKey, question, options, correctIndex }: { qKey: string; question: string; options: string[]; correctIndex: number }) => (
+    <div className="mt-3">
+      <button
+        onClick={() => fetchExplanation(qKey, question, options, correctIndex)}
+        disabled={loading[qKey]}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-accent-foreground bg-accent/50 hover:bg-accent px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+      >
+        {loading[qKey] ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lightbulb className="h-4 w-4" />}
+        {explanations[qKey] ? 'Skrýt vysvětlení' : 'Vysvětlení'}
+      </button>
+      <AnimatePresence>
+        {explanations[qKey] && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <p className="mt-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3 leading-relaxed">
+              💡 {explanations[qKey]}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 
   return (
     <div className="min-h-screen flex flex-col items-center p-6 pt-12">
@@ -57,6 +109,7 @@ const ReviewScreen = ({ entry, onBack }: ReviewScreenProps) => {
                       );
                     })}
                   </div>
+                  <ExplainButton qKey={`m-${i}`} question={a.question} options={a.options} correctIndex={a.correctIndex} />
                 </motion.div>
               ))}
             </div>
@@ -77,6 +130,7 @@ const ReviewScreen = ({ entry, onBack }: ReviewScreenProps) => {
                 >
                   <p className="font-medium text-card-foreground text-sm">{a.question}</p>
                   <p className="text-primary text-sm mt-1">✓ {a.options[a.correctIndex]}</p>
+                  <ExplainButton qKey={`c-${i}`} question={a.question} options={a.options} correctIndex={a.correctIndex} />
                 </motion.div>
               ))}
             </div>
