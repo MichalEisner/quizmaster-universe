@@ -49,7 +49,8 @@ serve(async (req) => {
 
     const systemPrompt = `Jsi kreativní tvůrce kvízových otázek v češtině. NIKDY neopakuj stejné otázky.
 Každá otázka musí mít přesně 4 možnosti odpovědi, z nichž právě jedna je správná.
-Otázky by měly být středně obtížné, zajímavé a překvapivé.`;
+${difficultyInstruction}
+Otázky by měly být zajímavé a překvapivé.`;
 
     const seed = Math.random().toString(36).substring(2, 10);
     const timestamp = Date.now();
