@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { QuizHistoryEntry, getHistory, clearHistory } from '@/lib/quizHistory';
-import { useState } from 'react';
+import { QuizHistoryEntry, getLocalHistory, clearLocalHistory, getDbHistory, clearDbHistory } from '@/lib/quizHistory';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HistoryScreenProps {
   onBack: () => void;
@@ -14,10 +15,29 @@ const difficultyLabels: Record<string, { label: string; icon: string }> = {
 };
 
 const HistoryScreen = ({ onBack, onReview }: HistoryScreenProps) => {
-  const [history, setHistory] = useState(getHistory());
+  const { user } = useAuth();
+  const [history, setHistory] = useState<QuizHistoryEntry[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleClear = () => {
-    clearHistory();
+  useEffect(() => {
+    const load = async () => {
+      if (user) {
+        const data = await getDbHistory();
+        setHistory(data);
+      } else {
+        setHistory(getLocalHistory());
+      }
+      setLoading(false);
+    };
+    load();
+  }, [user]);
+
+  const handleClear = async () => {
+    if (user) {
+      await clearDbHistory(user.id);
+    } else {
+      clearLocalHistory();
+    }
     setHistory([]);
   };
 
@@ -41,7 +61,19 @@ const HistoryScreen = ({ onBack, onReview }: HistoryScreenProps) => {
           )}
         </div>
 
-        {history.length === 0 ? (
+        {!user && (
+          <div className="mb-6 p-4 bg-card border border-border rounded-xl text-center">
+            <p className="text-muted-foreground text-sm">
+              📝 Přihlaš se pro uložení historie mezi zařízeními
+            </p>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent mx-auto" />
+          </div>
+        ) : history.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

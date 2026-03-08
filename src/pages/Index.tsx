@@ -8,7 +8,8 @@ import ReviewScreen from '@/components/ReviewScreen';
 import { CategoryInfo, generateQuiz, Question } from '@/data/questions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { saveQuiz, QuizAnswer, QuizHistoryEntry } from '@/lib/quizHistory';
+import { saveLocalQuiz, saveDbQuiz, QuizAnswer, QuizHistoryEntry } from '@/lib/quizHistory';
+import { useAuth } from '@/hooks/useAuth';
 
 type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading' | 'history' | 'review';
 
@@ -20,6 +21,7 @@ const Index = () => {
   const [result, setResult] = useState({ score: 0, total: 0 });
   const [reviewEntry, setReviewEntry] = useState<QuizHistoryEntry | null>(null);
   const [lastAnswers, setLastAnswers] = useState<QuizAnswer[]>([]);
+  const { user } = useAuth();
 
   const selectCategory = (cat: CategoryInfo) => {
     setCategory(cat);
@@ -51,12 +53,12 @@ const Index = () => {
     }
   };
 
-  const finishQuiz = (score: number, total: number, answers: QuizAnswer[]) => {
+  const finishQuiz = async (score: number, total: number, answers: QuizAnswer[]) => {
     setResult({ score, total });
     setLastAnswers(answers);
 
     if (category) {
-      const saved = saveQuiz({
+      const entryData = {
         categoryId: category.id,
         categoryName: category.name,
         categoryIcon: category.icon,
@@ -64,8 +66,15 @@ const Index = () => {
         score,
         total,
         answers,
-      });
-      setReviewEntry(saved);
+      };
+
+      if (user) {
+        const saved = await saveDbQuiz(user.id, entryData);
+        setReviewEntry(saved);
+      } else {
+        const saved = saveLocalQuiz(entryData);
+        setReviewEntry(saved);
+      }
     }
 
     setScreen('results');

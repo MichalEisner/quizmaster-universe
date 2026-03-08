@@ -100,7 +100,7 @@ export async function saveDbQuiz(
     difficulty: data.difficulty as Difficulty,
     score: data.score,
     total: data.total,
-    answers: data.answers as QuizAnswer[],
+    answers: data.answers as unknown as QuizAnswer[],
     date: data.created_at,
   };
 }
