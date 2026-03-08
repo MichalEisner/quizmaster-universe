@@ -5,13 +5,14 @@ import QuizScreen from '@/components/QuizScreen';
 import ResultScreen from '@/components/ResultScreen';
 import HistoryScreen from '@/components/HistoryScreen';
 import ReviewScreen from '@/components/ReviewScreen';
+import LeaderboardScreen from '@/components/LeaderboardScreen';
 import { CategoryInfo, generateQuiz, Question } from '@/data/questions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { saveLocalQuiz, saveDbQuiz, QuizAnswer, QuizHistoryEntry } from '@/lib/quizHistory';
 import { useAuth } from '@/hooks/useAuth';
 
-type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading' | 'history' | 'review';
+type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading' | 'history' | 'review' | 'leaderboard';
 
 const Index = () => {
   const [screen, setScreen] = useState<Screen>('categories');
@@ -87,7 +88,7 @@ const Index = () => {
   return (
     <>
       {screen === 'categories' && (
-        <CategorySelect onSelect={selectCategory} onHistory={() => setScreen('history')} />
+        <CategorySelect onSelect={selectCategory} onHistory={() => setScreen('history')} onLeaderboard={() => setScreen('leaderboard')} />
       )}
       {screen === 'difficulty' && category && (
         <DifficultySelect
@@ -133,6 +134,9 @@ const Index = () => {
           entry={reviewEntry}
           onBack={() => setScreen('history')}
         />
+      )}
+      {screen === 'leaderboard' && (
+        <LeaderboardScreen onBack={() => setScreen('categories')} />
       )}
     </>
   );
