@@ -13,6 +13,7 @@ interface LeaderboardEntry {
   username: string;
   total_score: number;
   quiz_count: number;
+  avatar_url: string | null;
 }
 
 const tabs = [
