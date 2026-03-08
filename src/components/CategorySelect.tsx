@@ -4,6 +4,7 @@ import { categories, CategoryInfo } from '@/data/questions';
 interface CategorySelectProps {
   onSelect: (category: CategoryInfo) => void;
   onHistory: () => void;
+  onLeaderboard: () => void;
 }
 
 const categoryColors: Record<string, string> = {
