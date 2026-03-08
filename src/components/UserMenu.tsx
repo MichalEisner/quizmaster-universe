@@ -48,7 +48,11 @@ const UserMenu = () => {
     setSaving(false);
 
     if (error) {
-      toast.error('Nepodařilo se změnit přezdívku');
+      if (error.code === '23505') {
+        toast.error('Tato přezdívka je již zabraná');
+      } else {
+        toast.error('Nepodařilo se změnit přezdívku');
+      }
     } else {
       toast.success('Přezdívka změněna');
       setOpen(false);
