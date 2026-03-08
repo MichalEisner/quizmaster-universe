@@ -15,7 +15,7 @@ const categoryColors: Record<string, string> = {
   books: 'border-category-books hover:shadow-[0_0_25px_hsl(45_95%_60%/0.4)]',
 };
 
-const CategorySelect = ({ onSelect, onHistory }: CategorySelectProps) => {
+const CategorySelect = ({ onSelect, onHistory, onLeaderboard }: CategorySelectProps) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
       <motion.div
