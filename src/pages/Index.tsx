@@ -135,6 +135,9 @@ const Index = () => {
           onBack={() => setScreen('history')}
         />
       )}
+      {screen === 'leaderboard' && (
+        <LeaderboardScreen onBack={() => setScreen('categories')} />
+      )}
     </>
   );
 };
