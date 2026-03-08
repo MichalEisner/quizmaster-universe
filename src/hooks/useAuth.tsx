@@ -35,7 +35,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    locationRef.current = location.pathname;
+  }, [location.pathname]);
+
+  useEffect(() => {
       const wasLoggedOut = !prevSessionRef.current;
       setSession(session);
       setUser(session?.user ?? null);
