@@ -49,17 +49,30 @@ const CategorySelect = ({ onSelect, onHistory, onLeaderboard }: CategorySelectPr
         ))}
       </div>
 
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onHistory}
-        className="mt-10 px-6 py-3 bg-muted text-foreground rounded-lg font-semibold flex items-center gap-2 cursor-pointer hover:bg-muted/80 transition-colors"
-      >
-        📋 Historie kvízů
-      </motion.button>
+      <div className="flex gap-4 mt-10 flex-wrap justify-center">
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onHistory}
+          className="px-6 py-3 bg-muted text-foreground rounded-lg font-semibold flex items-center gap-2 cursor-pointer hover:bg-muted/80 transition-colors"
+        >
+          📋 Historie kvízů
+        </motion.button>
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onLeaderboard}
+          className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold flex items-center gap-2 cursor-pointer hover:bg-primary/90 transition-colors"
+        >
+          🏆 Žebříček
+        </motion.button>
+      </div>
     </div>
   );
 };
