@@ -45,7 +45,7 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
         setSelected(null);
         setShowResult(false);
       } else {
-        const finalScore = score + (isCorrect ? 1 : 0);
+        const finalScore = score;
         onFinish(finalScore, questions.length, answers);
       }
     }, 1500);
