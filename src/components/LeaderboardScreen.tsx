@@ -102,6 +102,12 @@ const LeaderboardScreen = ({ onBack }: LeaderboardScreenProps) => {
                   }`}
                 >
                   <span className="text-2xl w-10 text-center font-bold">{getMedal(i)}</span>
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarImage src={entry.avatar_url || undefined} alt={entry.username || 'Anonym'} />
+                    <AvatarFallback className="bg-muted text-muted-foreground font-bold">
+                      {(entry.username || 'A').charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className={`font-bold truncate ${isMe ? 'text-primary' : 'text-card-foreground'}`}>
                       {entry.username || 'Anonym'}
