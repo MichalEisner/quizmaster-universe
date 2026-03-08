@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Question } from '@/data/questions';
 import { QuizAnswer } from '@/lib/quizHistory';
+
+const TIME_PER_QUESTION = 15; // seconds
 
 interface QuizScreenProps {
   questions: Question[];
@@ -17,12 +19,39 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
+  const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const question = questions[current];
   const progress = ((current + 1) / questions.length) * 100;
+  const timePercent = (timeLeft / TIME_PER_QUESTION) * 100;
+
+  // Countdown timer
+  useEffect(() => {
+    if (showResult) return;
+    setTimeLeft(TIME_PER_QUESTION);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [current, showResult]);
+
+  // Auto-select when time runs out
+  useEffect(() => {
+    if (timeLeft === 0 && !showResult) {
+      handleSelect(-1); // -1 = no answer
+    }
+  }, [timeLeft]);
 
   const handleSelect = (index: number) => {
     if (selected !== null) return;
+    if (timerRef.current) clearInterval(timerRef.current);
     setSelected(index);
     setShowResult(true);
     const correct = index === question.correctIndex;
@@ -34,8 +63,6 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
       selectedIndex: index,
     }]);
   };
-
-  const isCorrect = selected === question.correctIndex;
 
   useEffect(() => {
     if (!showResult) return;
@@ -66,6 +93,9 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
     return `${base} border-border bg-muted/30 opacity-50`;
   };
 
+  const timerColor = timeLeft <= 5 ? 'text-destructive' : timeLeft <= 10 ? 'text-yellow-500' : 'text-primary';
+  const timerBarColor = timeLeft <= 5 ? 'bg-destructive' : timeLeft <= 10 ? 'bg-yellow-500' : 'bg-primary';
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-2xl">
@@ -79,6 +109,20 @@ const QuizScreen = ({ questions, categoryName, categoryIcon, onFinish, onBack }:
           </div>
           <span className="font-mono text-sm text-muted-foreground">
             {current + 1}/{questions.length}
+          </span>
+        </div>
+
+        {/* Timer bar */}
+        <div className="w-full h-2 bg-muted rounded-full mb-2 overflow-hidden">
+          <motion.div
+            className={`h-full rounded-full ${timerBarColor}`}
+            animate={{ width: `${timePercent}%` }}
+            transition={{ duration: 0.5, ease: 'linear' }}
+          />
+        </div>
+        <div className="flex justify-end mb-4">
+          <span className={`font-mono text-sm font-bold ${timerColor} ${timeLeft <= 5 ? 'animate-pulse' : ''}`}>
+            ⏱ {timeLeft}s
           </span>
         </div>
 
