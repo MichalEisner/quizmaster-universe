@@ -19,7 +19,14 @@ serve(async (req) => {
   }
 
   try {
-    const { category, count = 10 } = await req.json();
+    const { category, count = 10, difficulty = 'medium' } = await req.json();
+
+    const difficultyPrompts: Record<string, string> = {
+      easy: 'Otázky musí být LEHKÉ – základní fakta, která zná většina lidí. Žádné chytáky.',
+      medium: 'Otázky by měly být STŘEDNĚ OBTÍŽNÉ – vyžadují solidní znalosti, ale nejsou extrémně těžké.',
+      hard: 'Otázky musí být TĚŽKÉ – detailní a specifické znalosti, chytáky, méně známá fakta. Pro skutečné experty.',
+    };
+    const difficultyInstruction = difficultyPrompts[difficulty] || difficultyPrompts.medium;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -42,7 +49,8 @@ serve(async (req) => {
 
     const systemPrompt = `Jsi kreativní tvůrce kvízových otázek v češtině. NIKDY neopakuj stejné otázky.
 Každá otázka musí mít přesně 4 možnosti odpovědi, z nichž právě jedna je správná.
-Otázky by měly být středně obtížné, zajímavé a překvapivé.`;
+${difficultyInstruction}
+Otázky by měly být zajímavé a překvapivé.`;
 
     const seed = Math.random().toString(36).substring(2, 10);
     const timestamp = Date.now();
