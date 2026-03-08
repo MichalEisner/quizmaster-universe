@@ -58,6 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } else {
         setUsername('');
+        setAvatarUrl('');
       }
       prevSessionRef.current = newSession;
       setLoading(false);
