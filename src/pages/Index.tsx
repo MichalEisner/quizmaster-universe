@@ -3,11 +3,14 @@ import CategorySelect from '@/components/CategorySelect';
 import DifficultySelect, { Difficulty } from '@/components/DifficultySelect';
 import QuizScreen from '@/components/QuizScreen';
 import ResultScreen from '@/components/ResultScreen';
+import HistoryScreen from '@/components/HistoryScreen';
+import ReviewScreen from '@/components/ReviewScreen';
 import { CategoryInfo, generateQuiz, Question } from '@/data/questions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { saveQuiz, QuizAnswer, QuizHistoryEntry } from '@/lib/quizHistory';
 
-type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading';
+type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading' | 'history' | 'review';
 
 const Index = () => {
   const [screen, setScreen] = useState<Screen>('categories');
@@ -15,6 +18,8 @@ const Index = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [result, setResult] = useState({ score: 0, total: 0 });
+  const [reviewEntry, setReviewEntry] = useState<QuizHistoryEntry | null>(null);
+  const [lastAnswers, setLastAnswers] = useState<QuizAnswer[]>([]);
 
   const selectCategory = (cat: CategoryInfo) => {
     setCategory(cat);
@@ -46,8 +51,23 @@ const Index = () => {
     }
   };
 
-  const finishQuiz = (score: number, total: number) => {
+  const finishQuiz = (score: number, total: number, answers: QuizAnswer[]) => {
     setResult({ score, total });
+    setLastAnswers(answers);
+
+    if (category) {
+      const saved = saveQuiz({
+        categoryId: category.id,
+        categoryName: category.name,
+        categoryIcon: category.icon,
+        difficulty,
+        score,
+        total,
+        answers,
+      });
+      setReviewEntry(saved);
+    }
+
     setScreen('results');
   };
 
@@ -57,7 +77,9 @@ const Index = () => {
 
   return (
     <>
-      {screen === 'categories' && <CategorySelect onSelect={selectCategory} />}
+      {screen === 'categories' && (
+        <CategorySelect onSelect={selectCategory} onHistory={() => setScreen('history')} />
+      )}
       {screen === 'difficulty' && category && (
         <DifficultySelect
           category={category}
@@ -88,6 +110,19 @@ const Index = () => {
           categoryIcon={category.icon}
           onRestart={restart}
           onHome={() => setScreen('categories')}
+          onReview={reviewEntry ? () => { setScreen('review'); } : undefined}
+        />
+      )}
+      {screen === 'history' && (
+        <HistoryScreen
+          onBack={() => setScreen('categories')}
+          onReview={(entry) => { setReviewEntry(entry); setScreen('review'); }}
+        />
+      )}
+      {screen === 'review' && reviewEntry && (
+        <ReviewScreen
+          entry={reviewEntry}
+          onBack={() => setScreen('history')}
         />
       )}
     </>
