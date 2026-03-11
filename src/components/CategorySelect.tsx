@@ -5,6 +5,7 @@ interface CategorySelectProps {
   onSelect: (category: CategoryInfo) => void;
   onHistory: () => void;
   onLeaderboard: () => void;
+  onCustom: () => void;
 }
 
 const categoryColors: Record<string, string> = {
