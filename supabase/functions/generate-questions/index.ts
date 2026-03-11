@@ -19,7 +19,7 @@ serve(async (req) => {
   }
 
   try {
-    const { category, count = 10, difficulty = 'medium' } = await req.json();
+    const { category, count = 10, difficulty = 'medium', customTopic } = await req.json();
 
     const difficultyPrompts: Record<string, string> = {
       easy: 'Otázky musí být LEHKÉ – základní fakta, která zná většina lidí. Žádné chytáky.',
@@ -31,8 +31,20 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const topic = categoryPrompts[category];
-    if (!topic) throw new Error(`Unknown category: ${category}`);
+    let topic: string;
+
+    if (category === 'custom') {
+      if (!customTopic || typeof customTopic !== 'string' || customTopic.trim().length < 3) {
+        return new Response(JSON.stringify({ error: "Zadej prosím téma s alespoň 3 znaky." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Sanitize: limit length
+      topic = customTopic.trim().slice(0, 100);
+    } else {
+      topic = categoryPrompts[category];
+      if (!topic) throw new Error(`Unknown category: ${category}`);
+    }
 
     const subtopics: Record<string, string[]> = {
       law: ["pracovní právo a zákoník práce", "rodinné právo a dědictví", "obchodní právo a korporace", "správní právo a úřady", "trestní právo procesní", "mezinárodní humanitární právo", "právo duševního vlastnictví", "ústavní právo a dělba moci", "evropské právo a instituce EU", "historie práva a právní filosofie"],
@@ -42,19 +54,49 @@ serve(async (req) => {
       books: ["česká literatura 20. století", "fantasy a sci-fi literatura", "klasická ruská literatura", "americká literatura", "dětská literatura a pohádky", "básníci a poezie", "detektivní a kriminální romány", "nobelova cena za literaturu", "antická literatura", "současná světová próza"],
     };
 
-    const catSubtopics = subtopics[category] || [];
-    // Pick 3 random subtopics to focus on
-    const shuffled = catSubtopics.sort(() => Math.random() - 0.5);
-    const focus = shuffled.slice(0, 3).join(", ");
+    const seed = Math.random().toString(36).substring(2, 10);
+    const timestamp = Date.now();
 
-    const systemPrompt = `Jsi kreativní tvůrce kvízových otázek v češtině. NIKDY neopakuj stejné otázky.
+    let systemPrompt: string;
+    let userPrompt: string;
+
+    if (category === 'custom') {
+      systemPrompt = `Jsi kreativní tvůrce kvízových otázek v češtině. Uživatel ti zadá téma a ty vytvoříš kvízové otázky.
+DŮLEŽITÉ PRAVIDLO: Pokud zadané téma je nesmyslné, nesrozumitelné, příliš vágní, urážlivé, nebo z něj nelze vytvořit faktické kvízové otázky, odpověz POUZE tímto JSON objektem (žádný jiný text):
+{"error": "Omlouváme se, ale na toto téma nelze vytvořit kvíz. Zkus zadat jiné, konkrétnější téma."}
+
+Pokud téma JE validní:
+- Každá otázka musí mít přesně 4 možnosti odpovědi, z nichž právě jedna je správná.
+- ${difficultyInstruction}
+- Otázky by měly být zajímavé, fakticky správné a ověřitelné.`;
+
+      userPrompt = `Vygeneruj přesně ${count} UNIKÁTNÍCH kvízových otázek na téma: "${topic}".
+
+Identifikátor generování: ${seed}-${timestamp}. Buď maximálně kreativní.
+
+Pokud téma NENÍ vhodné pro kvíz, odpověz chybovým JSON objektem jak je popsáno v instrukcích.
+
+Jinak odpověz POUZE validním JSON polem v tomto formátu (žádný jiný text):
+[
+  {
+    "question": "Text otázky?",
+    "options": ["Odpověď A", "Odpověď B", "Odpověď C", "Odpověď D"],
+    "correctIndex": 0
+  }
+]
+
+correctIndex je index (0-3) správné odpovědi v poli options.`;
+    } else {
+      const catSubtopics = subtopics[category] || [];
+      const shuffled = catSubtopics.sort(() => Math.random() - 0.5);
+      const focus = shuffled.slice(0, 3).join(", ");
+
+      systemPrompt = `Jsi kreativní tvůrce kvízových otázek v češtině. NIKDY neopakuj stejné otázky.
 Každá otázka musí mít přesně 4 možnosti odpovědi, z nichž právě jedna je správná.
 ${difficultyInstruction}
 Otázky by měly být zajímavé a překvapivé.`;
 
-    const seed = Math.random().toString(36).substring(2, 10);
-    const timestamp = Date.now();
-    const userPrompt = `Vygeneruj přesně ${count} UNIKÁTNÍCH kvízových otázek na téma: ${topic}.
+      userPrompt = `Vygeneruj přesně ${count} UNIKÁTNÍCH kvízových otázek na téma: ${topic}.
 
 POVINNĚ se zaměř především na tato podtémata: ${focus}.
 Identifikátor generování: ${seed}-${timestamp}. Buď maximálně kreativní a vyhni se očividným/banálním otázkám.
@@ -69,6 +111,7 @@ Odpověz POUZE validním JSON polem v tomto formátu (žádný jiný text):
 ]
 
 correctIndex je index (0-3) správné odpovědi v poli options.`;
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -110,9 +153,16 @@ correctIndex je index (0-3) správné odpovědi v poli options.`;
     // Strip markdown code fences if present
     content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
 
-    const questions = JSON.parse(content);
+    const parsed = JSON.parse(content);
 
-    return new Response(JSON.stringify({ questions }), {
+    // Check if AI returned an error object (for invalid custom topics)
+    if (parsed && !Array.isArray(parsed) && parsed.error) {
+      return new Response(JSON.stringify({ error: parsed.error }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ questions: parsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

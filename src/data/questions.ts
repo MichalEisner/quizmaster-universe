@@ -4,7 +4,7 @@ export interface Question {
   correctIndex: number;
 }
 
-export type Category = 'law' | 'it' | 'games' | 'movies' | 'books';
+export type Category = 'law' | 'it' | 'games' | 'movies' | 'books' | 'custom';
 
 export interface CategoryInfo {
   id: Category;
@@ -192,6 +192,7 @@ const questionBanks: Record<Category, Question[]> = {
   games: gamesQuestions,
   movies: moviesQuestions,
   books: booksQuestions,
+  custom: [],
 };
 
 function shuffleArray<T>(array: T[]): T[] {

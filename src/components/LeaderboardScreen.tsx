@@ -20,6 +20,7 @@ interface LeaderboardEntry {
 const tabs = [
   { id: null, label: 'Celkově', icon: '🏆' },
   ...categories.map(c => ({ id: c.id, label: c.name, icon: c.icon })),
+  { id: 'custom', label: 'Vlastní téma', icon: '✨' },
 ];
 
 const LeaderboardScreen = ({ onBack }: LeaderboardScreenProps) => {
