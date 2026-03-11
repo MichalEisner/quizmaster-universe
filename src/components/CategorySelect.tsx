@@ -47,6 +47,19 @@ const CategorySelect = ({ onSelect, onHistory, onLeaderboard }: CategorySelectPr
             <p className="text-sm text-muted-foreground">{cat.description}</p>
           </motion.button>
         ))}
+        <motion.button
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: categories.length * 0.1 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={onCustom}
+          className="bg-card rounded-xl p-6 border-2 border-primary/50 hover:shadow-[0_0_25px_hsl(var(--primary)/0.4)] transition-all duration-300 text-left group cursor-pointer"
+        >
+          <span className="text-4xl mb-3 block">✨</span>
+          <h3 className="text-xl font-bold text-card-foreground mb-1">Vlastní téma</h3>
+          <p className="text-sm text-muted-foreground">Napiš si vlastní téma a AI vytvoří kvíz</p>
+        </motion.button>
       </div>
 
       <div className="flex gap-4 mt-10 flex-wrap justify-center">
