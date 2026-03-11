@@ -192,6 +192,7 @@ const questionBanks: Record<Category, Question[]> = {
   games: gamesQuestions,
   movies: moviesQuestions,
   books: booksQuestions,
+  custom: [],
 };
 
 function shuffleArray<T>(array: T[]): T[] {

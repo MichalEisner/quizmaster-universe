@@ -6,13 +6,14 @@ import ResultScreen from '@/components/ResultScreen';
 import HistoryScreen from '@/components/HistoryScreen';
 import ReviewScreen from '@/components/ReviewScreen';
 import LeaderboardScreen from '@/components/LeaderboardScreen';
+import CustomTopicInput from '@/components/CustomTopicInput';
 import { CategoryInfo, generateQuiz, Question } from '@/data/questions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { saveLocalQuiz, saveDbQuiz, QuizAnswer, QuizHistoryEntry } from '@/lib/quizHistory';
 import { useAuth } from '@/hooks/useAuth';
 
-type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading' | 'history' | 'review' | 'leaderboard';
+type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading' | 'history' | 'review' | 'leaderboard' | 'custom-topic';
 
 const Index = () => {
   const [screen, setScreen] = useState<Screen>('categories');
@@ -22,6 +23,7 @@ const Index = () => {
   const [result, setResult] = useState({ score: 0, total: 0 });
   const [reviewEntry, setReviewEntry] = useState<QuizHistoryEntry | null>(null);
   const [lastAnswers, setLastAnswers] = useState<QuizAnswer[]>([]);
+  const [customTopic, setCustomTopic] = useState('');
   const { user } = useAuth();
 
   const selectCategory = (cat: CategoryInfo) => {
@@ -33,12 +35,25 @@ const Index = () => {
     setDifficulty(diff);
     setScreen('loading');
 
+    const isCustom = category?.id === 'custom';
+
     try {
       const { data, error } = await supabase.functions.invoke('generate-questions', {
-        body: { category: category!.id, count: 10, difficulty: diff },
+        body: {
+          category: isCustom ? 'custom' : category!.id,
+          count: 10,
+          difficulty: diff,
+          ...(isCustom ? { customTopic } : {}),
+        },
       });
 
       if (error) throw error;
+
+      if (data?.error) {
+        toast.error(data.error);
+        setScreen(isCustom ? 'custom-topic' : 'categories');
+        return;
+      }
 
       if (data?.questions && Array.isArray(data.questions) && data.questions.length > 0) {
         setQuestions(data.questions);
@@ -48,10 +63,27 @@ const Index = () => {
       }
     } catch (e) {
       console.error('AI generation failed, using fallback:', e);
-      toast.error('AI generování selhalo, používám záložní otázky');
-      setQuestions(generateQuiz(category!.id, 10));
-      setScreen('quiz');
+      if (isCustom) {
+        toast.error('Nepodařilo se vygenerovat kvíz na toto téma. Zkus jiné.');
+        setScreen('custom-topic');
+      } else {
+        toast.error('AI generování selhalo, používám záložní otázky');
+        setQuestions(generateQuiz(category!.id, 10));
+        setScreen('quiz');
+      }
     }
+  };
+
+  const handleCustomTopic = (topic: string) => {
+    setCustomTopic(topic);
+    const customCat: CategoryInfo = {
+      id: 'custom',
+      name: topic,
+      icon: '✨',
+      description: `Vlastní téma: ${topic}`,
+    };
+    setCategory(customCat);
+    setScreen('difficulty');
   };
 
   const finishQuiz = async (score: number, total: number, answers: QuizAnswer[]) => {
@@ -88,13 +120,24 @@ const Index = () => {
   return (
     <>
       {screen === 'categories' && (
-        <CategorySelect onSelect={selectCategory} onHistory={() => setScreen('history')} onLeaderboard={() => setScreen('leaderboard')} />
+        <CategorySelect
+          onSelect={selectCategory}
+          onHistory={() => setScreen('history')}
+          onLeaderboard={() => setScreen('leaderboard')}
+          onCustom={() => setScreen('custom-topic')}
+        />
+      )}
+      {screen === 'custom-topic' && (
+        <CustomTopicInput
+          onSubmit={handleCustomTopic}
+          onBack={() => setScreen('categories')}
+        />
       )}
       {screen === 'difficulty' && category && (
         <DifficultySelect
           category={category}
           onSelect={startQuiz}
-          onBack={() => setScreen('categories')}
+          onBack={() => setScreen(category.id === 'custom' ? 'custom-topic' : 'categories')}
         />
       )}
       {screen === 'loading' && (
