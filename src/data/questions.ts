@@ -4,7 +4,7 @@ export interface Question {
   correctIndex: number;
 }
 
-export type Category = 'law' | 'it' | 'games' | 'movies' | 'books';
+export type Category = 'law' | 'it' | 'games' | 'movies' | 'books' | 'custom';
 
 export interface CategoryInfo {
   id: Category;
