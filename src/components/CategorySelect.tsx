@@ -6,6 +6,7 @@ interface CategorySelectProps {
   onHistory: () => void;
   onLeaderboard: () => void;
   onCustom: () => void;
+  onMultiplayer: () => void;
 }
 
 const categoryColors: Record<string, string> = {
