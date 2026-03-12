@@ -126,6 +126,7 @@ const Index = () => {
           onHistory={() => setScreen('history')}
           onLeaderboard={() => setScreen('leaderboard')}
           onCustom={() => setScreen('custom-topic')}
+          onMultiplayer={() => setScreen('multiplayer')}
         />
       )}
       {screen === 'custom-topic' && (
