@@ -6,6 +6,7 @@ interface CategorySelectProps {
   onHistory: () => void;
   onLeaderboard: () => void;
   onCustom: () => void;
+  onMultiplayer: () => void;
 }
 
 const categoryColors: Record<string, string> = {
@@ -16,7 +17,7 @@ const categoryColors: Record<string, string> = {
   books: 'border-category-books hover:shadow-[0_0_25px_hsl(45_95%_60%/0.4)]',
 };
 
-const CategorySelect = ({ onSelect, onHistory, onLeaderboard, onCustom }: CategorySelectProps) => {
+const CategorySelect = ({ onSelect, onHistory, onLeaderboard, onCustom, onMultiplayer }: CategorySelectProps) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
       <motion.div
@@ -64,6 +65,17 @@ const CategorySelect = ({ onSelect, onHistory, onLeaderboard, onCustom }: Catego
       </div>
 
       <div className="flex gap-4 mt-10 flex-wrap justify-center">
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onMultiplayer}
+          className="px-6 py-3 bg-accent text-accent-foreground rounded-lg font-semibold flex items-center gap-2 cursor-pointer hover:bg-accent/80 transition-colors"
+        >
+          ⚔️ Multiplayer
+        </motion.button>
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

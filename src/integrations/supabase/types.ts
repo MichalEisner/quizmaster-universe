@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      multiplayer_players: {
+        Row: {
+          answers: Json | null
+          avatar_url: string | null
+          current_answer: number | null
+          id: string
+          joined_at: string | null
+          room_id: string
+          score: number | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          answers?: Json | null
+          avatar_url?: string | null
+          current_answer?: number | null
+          id?: string
+          joined_at?: string | null
+          room_id: string
+          score?: number | null
+          user_id: string
+          username?: string
+        }
+        Update: {
+          answers?: Json | null
+          avatar_url?: string | null
+          current_answer?: number | null
+          id?: string
+          joined_at?: string | null
+          room_id?: string
+          score?: number | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "multiplayer_players_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "multiplayer_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      multiplayer_rooms: {
+        Row: {
+          category_icon: string | null
+          category_id: string | null
+          category_name: string | null
+          code: string
+          created_at: string | null
+          current_question_index: number | null
+          custom_topic: string | null
+          difficulty: string | null
+          host_id: string
+          id: string
+          is_matchmaking: boolean | null
+          max_players: number | null
+          question_started_at: string | null
+          questions: Json | null
+          status: string | null
+        }
+        Insert: {
+          category_icon?: string | null
+          category_id?: string | null
+          category_name?: string | null
+          code: string
+          created_at?: string | null
+          current_question_index?: number | null
+          custom_topic?: string | null
+          difficulty?: string | null
+          host_id: string
+          id?: string
+          is_matchmaking?: boolean | null
+          max_players?: number | null
+          question_started_at?: string | null
+          questions?: Json | null
+          status?: string | null
+        }
+        Update: {
+          category_icon?: string | null
+          category_id?: string | null
+          category_name?: string | null
+          code?: string
+          created_at?: string | null
+          current_question_index?: number | null
+          custom_topic?: string | null
+          difficulty?: string | null
+          host_id?: string
+          id?: string
+          is_matchmaking?: boolean | null
+          max_players?: number | null
+          question_started_at?: string | null
+          questions?: Json | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

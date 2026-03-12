@@ -7,13 +7,14 @@ import HistoryScreen from '@/components/HistoryScreen';
 import ReviewScreen from '@/components/ReviewScreen';
 import LeaderboardScreen from '@/components/LeaderboardScreen';
 import CustomTopicInput from '@/components/CustomTopicInput';
+import MultiplayerFlow from '@/components/MultiplayerFlow';
 import { CategoryInfo, generateQuiz, Question } from '@/data/questions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { saveLocalQuiz, saveDbQuiz, QuizAnswer, QuizHistoryEntry } from '@/lib/quizHistory';
 import { useAuth } from '@/hooks/useAuth';
 
-type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading' | 'history' | 'review' | 'leaderboard' | 'custom-topic';
+type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading' | 'history' | 'review' | 'leaderboard' | 'custom-topic' | 'multiplayer';
 
 const Index = () => {
   const [screen, setScreen] = useState<Screen>('categories');
@@ -125,6 +126,7 @@ const Index = () => {
           onHistory={() => setScreen('history')}
           onLeaderboard={() => setScreen('leaderboard')}
           onCustom={() => setScreen('custom-topic')}
+          onMultiplayer={() => setScreen('multiplayer')}
         />
       )}
       {screen === 'custom-topic' && (
@@ -180,6 +182,9 @@ const Index = () => {
       )}
       {screen === 'leaderboard' && (
         <LeaderboardScreen onBack={() => setScreen('categories')} />
+      )}
+      {screen === 'multiplayer' && (
+        <MultiplayerFlow onBack={() => setScreen('categories')} />
       )}
     </>
   );
