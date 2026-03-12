@@ -13,41 +13,39 @@ serve(async (req) => {
   try {
     const { question, options, correctIndex } = await req.json();
 
-    const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) throw new Error("GOOGLE_GEMINI_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const prompt = `Jsi vzdělaný asistent, který stručně a srozumitelně vysvětluje správné odpovědi na kvízové otázky v češtině. Odpovídej 2-4 větami.
-
-Otázka: ${question}
-Možnosti: ${options.map((o: string, i: number) => `${String.fromCharCode(65 + i)}) ${o}`).join(", ")}
-Správná odpověď: ${String.fromCharCode(65 + correctIndex)}) ${options[correctIndex]}
-
-Vysvětli stručně, proč je tato odpověď správná.`;
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            { role: "user", parts: [{ text: prompt }] },
-          ],
-          generationConfig: {
-            temperature: 0.3,
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        temperature: 0.3,
+        messages: [
+          {
+            role: "system",
+            content: "Jsi vzdělaný asistent, který stručně a srozumitelně vysvětluje správné odpovědi na kvízové otázky v češtině. Odpovídej 2-4 větami.",
           },
-        }),
-      }
-    );
+          {
+            role: "user",
+            content: `Otázka: ${question}\nMožnosti: ${options.map((o: string, i: number) => `${String.fromCharCode(65 + i)}) ${o}`).join(", ")}\nSprávná odpověď: ${String.fromCharCode(65 + correctIndex)}) ${options[correctIndex]}\n\nVysvětli stručně, proč je tato odpověď správná.`,
+          },
+        ],
+      }),
+    });
 
     if (!response.ok) {
       const t = await response.text();
-      console.error("Gemini API error:", response.status, t);
-      throw new Error("Gemini API error");
+      console.error("AI gateway error:", response.status, t);
+      throw new Error("AI gateway error");
     }
 
     const data = await response.json();
-    const explanation = data.candidates?.[0]?.content?.parts?.[0]?.text || "Vysvětlení není k dispozici.";
+    const explanation = data.choices?.[0]?.message?.content || "Vysvětlení není k dispozici.";
 
     return new Response(JSON.stringify({ explanation }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
