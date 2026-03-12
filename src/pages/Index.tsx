@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { saveLocalQuiz, saveDbQuiz, QuizAnswer, QuizHistoryEntry } from '@/lib/quizHistory';
 import { useAuth } from '@/hooks/useAuth';
 
-type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading' | 'history' | 'review' | 'leaderboard' | 'custom-topic';
+type Screen = 'categories' | 'difficulty' | 'quiz' | 'results' | 'loading' | 'history' | 'review' | 'leaderboard' | 'custom-topic' | 'multiplayer';
 
 const Index = () => {
   const [screen, setScreen] = useState<Screen>('categories');
