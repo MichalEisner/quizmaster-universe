@@ -183,6 +183,9 @@ const Index = () => {
       {screen === 'leaderboard' && (
         <LeaderboardScreen onBack={() => setScreen('categories')} />
       )}
+      {screen === 'multiplayer' && (
+        <MultiplayerFlow onBack={() => setScreen('categories')} />
+      )}
     </>
   );
 };

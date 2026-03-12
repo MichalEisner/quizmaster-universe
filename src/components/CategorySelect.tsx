@@ -68,6 +68,17 @@ const CategorySelect = ({ onSelect, onHistory, onLeaderboard, onCustom, onMultip
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onMultiplayer}
+          className="px-6 py-3 bg-accent text-accent-foreground rounded-lg font-semibold flex items-center gap-2 cursor-pointer hover:bg-accent/80 transition-colors"
+        >
+          ⚔️ Multiplayer
+        </motion.button>
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
