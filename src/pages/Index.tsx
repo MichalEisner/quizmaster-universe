@@ -7,6 +7,7 @@ import HistoryScreen from '@/components/HistoryScreen';
 import ReviewScreen from '@/components/ReviewScreen';
 import LeaderboardScreen from '@/components/LeaderboardScreen';
 import CustomTopicInput from '@/components/CustomTopicInput';
+import MultiplayerFlow from '@/components/MultiplayerFlow';
 import { CategoryInfo, generateQuiz, Question } from '@/data/questions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
